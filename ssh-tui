@@ -1,0 +1,115 @@
+#!/bin/bash
+export CONF_DIR="$HOME/.ssh-tui"
+export BACKTITLE="SSH-TUI(TSHELL) by lofyer, v1.2"
+
+init(){
+    if [ -e "$CONF_DIR" ]
+    then
+        return
+    fi
+    mkdir "$CONF_DIR"
+    if [ $? != 0 ]
+    then
+        dialog --clear --backtitle "$BACKTITLE" --title "ERROR" --ok-label "OK" --infobox "Make sure that you have write permission in ~/" 14 60
+        exit
+    fi
+}
+
+show_list(){
+    while true
+    do
+        local SESSION_FILES=($(ls $CONF_DIR/*.session))
+        local MENU=
+        local COUNT=0
+        for i in ${SESSION_FILES[@]}
+        do
+            COUNT=$[COUNT+1]
+            MENU="${MENU} ${COUNT} $i"
+        done
+        local OPTIONS=(${MENU})
+    
+        dialog --clear --backtitle "$BACKTITLE" \
+            --ok-label "Select" --cancel-label "Back" \
+            --title "Connect" \
+            --menu "Select session profile" 14 60 6 \
+            "${OPTIONS[@]}" \
+            2>/tmp/ssh-tui-answer
+        if [ $? != 0 ]
+        then
+            break
+        fi
+        clear
+        local ANSWER=$(cat /tmp/ssh-tui-answer)
+        local SESSION=($(cat ${SESSION_FILES[$(($ANSWER-1))]}))
+        echo "ssh ${SESSION[1]}@${SESSION[2]}"
+        ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]}
+    done
+}
+
+add_list(){
+    local PROFILE_NAME=$(dialog --clear --backtitle "$BACKTITLE" \
+        --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
+        --inputbox "Input profile name" 14 60 \
+        2>&1 >/dev/tty)
+    CMD=$(touch $CONF_DIR/$PROFILE_NAME.session)
+    echo $PROFILE_NAME > $CONF_DIR/$PROFILE_NAME.session
+    local USERNAME=$(dialog --clear --backtitle "$BACKTITLE" \
+        --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
+        --inputbox "Input session username" 14 60 "root" \
+        2>&1 >/dev/tty)
+    echo $USERNAME >> $CONF_DIR/$PROFILE_NAME.session
+    local HOSTNAME=$(dialog --clear --backtitle "$BACKTITLE" \
+        --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
+        --inputbox "Input session hostname or IP" 14 60 \
+        2>&1 >/dev/tty)
+    echo $HOSTNAME >> $CONF_DIR/$PROFILE_NAME.session
+    sync
+}
+
+delete_list(){
+    local SESSION_FILES=($(ls $CONF_DIR/*.session))
+    local MENU=
+    local COUNT=0
+    for i in ${SESSION_FILES[@]}
+    do
+        COUNT=$[COUNT+1]
+        MENU="${MENU} ${COUNT} $i off"
+    done
+
+    local OPTIONS=(${MENU})
+    local CHOICES=$(dialog --separate-output --checklist "Select options:" 22 76 16 "${OPTIONS[@]}" 2>&1 >/dev/tty)
+
+    if [ $? != 0 ]
+    then
+        break
+    fi
+
+    for CHOICE in $CHOICES
+    do
+        rm -fr ${SESSION_FILES[$(($CHOICE-1))]}
+    done
+}
+
+main(){
+    while true
+    do
+        dialog --clear --backtitle "$BACKTITLE" --ok-label "Select" --cancel-label "Exit" --title "Menu" --menu "Select action" 14 60 6 \
+            "List" "Show all the session" \
+            "Add" "Add new session" \
+            "Delete" "Delete session from list" \
+            2>/tmp/ssh-tui-answer
+        if [[ $? == 1 ]]
+        then
+            break
+        fi
+        advanced_answer=$(cat /tmp/ssh-tui-answer)
+        case $advanced_answer in
+            "List") show_list;;
+            "Add") add_list;;
+            "Delete") delete_list;;
+        esac
+    done
+}
+
+init
+main
