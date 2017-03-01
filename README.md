@@ -1,2 +1,8 @@
-# ssh-tui
-Show host list to be connected in you client.
+SSH-TUI or TSHELL:
+
+Like XSHELL.
+Show hosts list to be connected.
+
+INSTALL:
+apt-get/yum/brew install dialog
+./install.sh

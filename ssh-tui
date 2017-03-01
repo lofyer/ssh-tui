@@ -64,6 +64,14 @@ add_list(){
         2>&1 >/dev/tty)
     echo $HOSTNAME >> $CONF_DIR/$PROFILE_NAME.session
     sync
+    dialog --clear --backtitle "$BACKTITLE" \
+        --ok-label "Yes" --cancel-label "No" --title "PROFILE INFOMATION" \
+        --yesno "Try copy id to the host?" 14 60 \
+        2>&1 >/dev/tty
+    if [[ $? == 0 ]]
+    then
+        ssh-copy-id $USERNAME@$HOSTNAME
+    fi
 }
 
 delete_list(){

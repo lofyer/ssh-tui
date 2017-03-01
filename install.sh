@@ -1,2 +1,2 @@
 #!/bin/bash
-echo 'export PATH=$PATH:$PWD' >> ~/.bash_profile
+echo "export PATH=$PATH:$PWD" >> ~/.bash_profile
