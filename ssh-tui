@@ -70,6 +70,13 @@ add_list(){
         2>&1 >/dev/tty
     if [[ $? == 0 ]]
     then
+        if [ ! `ls ~/.ssh/ |grep \.pub` ]; then
+            if [ -e ~/.ssh/id_rsa ]; then
+                ./key-overwrite.exp
+            else
+                ./key-generate.exp
+            fi
+        fi
         ssh-copy-id $USERNAME@$HOSTNAME
     fi
 }
