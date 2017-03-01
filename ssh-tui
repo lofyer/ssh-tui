@@ -1,5 +1,6 @@
 #!/bin/bash
 export CONF_DIR="$HOME/.ssh-tui"
+export PUBKEY="$HOME/.ssh/*.pub"
 export BACKTITLE="SSH-TUI(TSHELL) by lofyer, v1.2"
 
 init(){
@@ -12,6 +13,12 @@ init(){
     then
         dialog --clear --backtitle "$BACKTITLE" --title "ERROR" --ok-label "OK" --infobox "Make sure that you have write permission in ~/" 14 60
         exit
+    fi
+    if [ -e "$PUBKEY" ]
+    then
+        return
+    else
+        dialog --clear --backtitle "$BACKTITLE" --title "ERROR" --ok-label "OK" --infobox "No pub key found. Press OK to create." 14 60
     fi
 }
 
@@ -72,9 +79,9 @@ add_list(){
     then
         if [ ! `ls ~/.ssh/ |grep \.pub` ]; then
             if [ -e ~/.ssh/id_rsa ]; then
-                ./key-overwrite.exp
+                ./key-overwrite.exp $HOME
             else
-                ./key-generate.exp
+                ./key-generate.exp $HOME
             fi
         fi
         ssh-copy-id $USERNAME@$HOSTNAME
