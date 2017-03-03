@@ -19,6 +19,13 @@ init(){
         return
     else
         dialog --clear --backtitle "$BACKTITLE" --title "ERROR" --ok-label "OK" --infobox "No pub key found. Press OK to create." 14 60
+        if [ ! `ls ~/.ssh/ |grep \.pub` ]; then
+            if [ -e ~/.ssh/id_rsa.pub ]; then
+                ./key-overwrite.exp $HOME
+            else
+                ./key-generate.exp $HOME
+            fi
+        fi
     fi
 }
 
@@ -31,7 +38,7 @@ show_list(){
         for i in ${SESSION_FILES[@]}
         do
             COUNT=$[COUNT+1]
-            MENU="${MENU} ${COUNT} $i"
+            MENU="${MENU} ${COUNT} $(basename $i)"
         done
         local OPTIONS=(${MENU})
     
@@ -48,8 +55,8 @@ show_list(){
         clear
         local ANSWER=$(cat /tmp/ssh-tui-answer)
         local SESSION=($(cat ${SESSION_FILES[$(($ANSWER-1))]}))
-        echo "ssh ${SESSION[1]}@${SESSION[2]}"
-        ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]}
+        echo "ssh ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}"
+        ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
     done
 }
 
@@ -58,18 +65,42 @@ add_list(){
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input profile name" 14 60 \
         2>&1 >/dev/tty)
+    if [ $? != 0 ]
+    then
+        return 1
+    fi
     CMD=$(touch $CONF_DIR/$PROFILE_NAME.session)
     echo $PROFILE_NAME > $CONF_DIR/$PROFILE_NAME.session
     local USERNAME=$(dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
-        --inputbox "Input session username" 14 60 "root" \
+        --inputbox "Input username" 14 60 "root" \
         2>&1 >/dev/tty)
+    if [ $? != 0 ]
+    then
+        rm -fr $CONF_DIR/$PROFILE_NAME.session
+        return 1
+    fi
     echo $USERNAME >> $CONF_DIR/$PROFILE_NAME.session
     local HOSTNAME=$(dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
-        --inputbox "Input session hostname or IP" 14 60 \
+        --inputbox "Input hostname or IP" 14 60 \
         2>&1 >/dev/tty)
+    if [ $? != 0 ]
+    then
+        rm -fr $CONF_DIR/$PROFILE_NAME.session
+        return 1
+    fi
     echo $HOSTNAME >> $CONF_DIR/$PROFILE_NAME.session
+    local PORT=$(dialog --clear --backtitle "$BACKTITLE" \
+        --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
+        --inputbox "Input ssh port" 14 60 "22" \
+        2>&1 >/dev/tty)
+    if [ $? != 0 ]
+    then
+        rm -fr $CONF_DIR/$PROFILE_NAME.session
+        return 1
+    fi
+    echo $PORT >> $CONF_DIR/$PROFILE_NAME.session
     sync
     dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "Yes" --cancel-label "No" --title "PROFILE INFOMATION" \
@@ -77,14 +108,7 @@ add_list(){
         2>&1 >/dev/tty
     if [[ $? == 0 ]]
     then
-        if [ ! `ls ~/.ssh/ |grep \.pub` ]; then
-            if [ -e ~/.ssh/id_rsa ]; then
-                ./key-overwrite.exp $HOME
-            else
-                ./key-generate.exp $HOME
-            fi
-        fi
-        ssh-copy-id $USERNAME@$HOSTNAME
+        ssh-copy-id $USERNAME@$HOSTNAME -p $PORT
     fi
 }
 
