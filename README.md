@@ -3,12 +3,15 @@ SSH-TUI or TSHELL:
 Show hosts list to be connected like XShell.
 
 安装
+
 INSTALL:
     apt-get/yum/brew install dialog
     ./install.sh
 
 堡垒机
+
 TO use it as a ssh gateway:
+
     # useradd ssh
     # passwd ssh
     # mkdir /home/ssh; chown -R ssh.ssh /home/ssh
