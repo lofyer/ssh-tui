@@ -6,19 +6,18 @@ Show hosts list to be connected like XShell.
 
 INSTALL:
 
-    $ sudo apt-get/yum/brew install dialog
+    $ sudo apt-get/yum/brew install dialog ssh-copy-id
     $ ./install.sh
 
 堡垒机
 
-TO use it as a ssh gateway:
+TO use it as a ssh gateway/proxy:
 
-    # useradd ssh
-    # passwd ssh
-    # mkdir /home/ssh; chown -R ssh.ssh /home/ssh
+    # useradd sshgw -m
+    # passwd sshgw
     # vi /etc/passwd
-        ssh:x:1001:1001::/home/ssh:/usr/bin/ssh-tui
-    # su demo
+        sshgw:x:1001:1001::/home/sshgw:/usr/bin/ssh-tui
+    # su sshgw
 
     $ git clone https://github.com/lofyer/ssh-tui
     $ cd ssh-tui; ./ssh-tui
