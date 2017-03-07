@@ -2,7 +2,7 @@
 export CONF_DIR="$HOME/.ssh-tui"
 export PUBKEY="$HOME/.ssh/*.pub"
 export BACKTITLE="SSH-TUI(TSHELL) by lofyer, v1.2"
-export TMP_ANS="/tmp/ssh-tui-$demo"
+export TMP_ANS="/tmp/ssh-tui-tmp-$USER"
 
 init(){
     if [ -e "$CONF_DIR" ]
