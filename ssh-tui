@@ -2,6 +2,7 @@
 export CONF_DIR="$HOME/.ssh-tui"
 export PUBKEY="$HOME/.ssh/*.pub"
 export BACKTITLE="SSH-TUI(TSHELL) by lofyer, v1.2"
+export TMP_ANS="/tmp/ssh-tui-$demo"
 
 init(){
     if [ -e "$CONF_DIR" ]
@@ -47,13 +48,13 @@ show_list(){
             --title "Connect" \
             --menu "Select session profile" 14 60 6 \
             "${OPTIONS[@]}" \
-            2>/tmp/ssh-tui-answer
+            2>$TMP_ANS
         if [ $? != 0 ]
         then
             break
         fi
         clear
-        local ANSWER=$(cat /tmp/ssh-tui-answer)
+        local ANSWER=$(cat $TMP_ANS)
         local SESSION=($(cat ${SESSION_FILES[$(($ANSWER-1))]}))
         echo "ssh ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}"
         ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
@@ -143,12 +144,12 @@ main(){
             "List" "Show all the session" \
             "Add" "Add new session" \
             "Delete" "Delete session from list" \
-            2>/tmp/ssh-tui-answer
+            2>$TMP_ANS
         if [[ $? == 1 ]]
         then
             break
         fi
-        advanced_answer=$(cat /tmp/ssh-tui-answer)
+        advanced_answer=$(cat $TMP_ANS)
         case $advanced_answer in
             "List") show_list;;
             "Add") add_list;;
