@@ -5,8 +5,9 @@ Show hosts list to be connected like XShell.
 安装
 
 INSTALL:
-    apt-get/yum/brew install dialog
-    ./install.sh
+
+    $ sudo apt-get/yum/brew install dialog
+    $ ./install.sh
 
 堡垒机
 
