@@ -9,6 +9,8 @@ INSTALL:
     $ sudo apt-get/yum/brew install dialog ssh-copy-id
     $ ./install.sh
 
+You may change CONF_DIR to hold everyone's profile.
+
 堡垒机
 
 TO use it as a ssh gateway/proxy:
