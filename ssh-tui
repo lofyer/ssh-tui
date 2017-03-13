@@ -20,13 +20,7 @@ init(){
         return
     else
         dialog --clear --backtitle "$BACKTITLE" --title "ERROR" --ok-label "OK" --infobox "No pub key found. Press OK to create." 14 60
-        if [ ! `ls ~/.ssh/ |grep \.pub` ]; then
-            if [ -e ~/.ssh/id_rsa.pub ]; then
-                ./key-overwrite.exp $HOME
-            else
-                ./key-generate.exp $HOME
-            fi
-        fi
+        ./key-generate.exp $HOME
     fi
 }
 
