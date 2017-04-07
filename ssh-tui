@@ -2,7 +2,7 @@
 export CONF_DIR="$HOME/.ssh-tui"
 export PUBKEY="$HOME/.ssh/*.pub"
 export BACKTITLE="SSH-TUI(TSHELL) by lofyer, v1.2"
-export TMP_ANS="/tmp/ssh-tui-tmp-$USER"
+export TMP_ANS="/tmp/ssh-tui-tmp-$$"
 
 init(){
     if [ -e "$CONF_DIR" ]
@@ -14,6 +14,12 @@ init(){
     then
         dialog --clear --backtitle "$BACKTITLE" --title "ERROR" --ok-label "OK" --infobox "Make sure that you have write permission in ~/" 14 60
         exit
+    fi
+    if [ -e "~/.ssh/config" ]
+    then
+        return
+    else
+        echo -e "Host *\nServerAliveInterval 60\nServerAliveCountMax 5" > ~/.ssh/config
     fi
     if [ -e "$PUBKEY" ]
     then
@@ -56,45 +62,52 @@ show_list(){
 }
 
 add_list(){
-    local PROFILE_NAME=$(dialog --clear --backtitle "$BACKTITLE" \
+    dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input profile name" 14 60 \
-        2>&1 >/dev/tty)
+        2>$TMP_ANS
     if [ $? != 0 ]
     then
         return 1
     fi
+    local PROFILE_NAME=$(cat $TMP_ANS)
     CMD=$(touch $CONF_DIR/$PROFILE_NAME.session)
     echo $PROFILE_NAME > $CONF_DIR/$PROFILE_NAME.session
-    local USERNAME=$(dialog --clear --backtitle "$BACKTITLE" \
+
+    dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input username" 14 60 "root" \
-        2>&1 >/dev/tty)
+        2>$TMP_ANS
     if [ $? != 0 ]
     then
         rm -fr $CONF_DIR/$PROFILE_NAME.session
         return 1
     fi
+    local USERNAME=$(cat $TMP_ANS)
     echo $USERNAME >> $CONF_DIR/$PROFILE_NAME.session
-    local HOSTNAME=$(dialog --clear --backtitle "$BACKTITLE" \
+
+    dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input hostname or IP" 14 60 \
-        2>&1 >/dev/tty)
+        2>&1 >/dev/tty
     if [ $? != 0 ]
     then
         rm -fr $CONF_DIR/$PROFILE_NAME.session
         return 1
     fi
+    local HOSTNAME=$(cat $TMP_ANS)
     echo $HOSTNAME >> $CONF_DIR/$PROFILE_NAME.session
-    local PORT=$(dialog --clear --backtitle "$BACKTITLE" \
+
+    dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input ssh port" 14 60 "22" \
-        2>&1 >/dev/tty)
+        2>$TMP_ANS
     if [ $? != 0 ]
     then
         rm -fr $CONF_DIR/$PROFILE_NAME.session
         return 1
     fi
+    local PORT=$(cat $TMP_ANS)
     echo $PORT >> $CONF_DIR/$PROFILE_NAME.session
     sync
     dialog --clear --backtitle "$BACKTITLE" \
