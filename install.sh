@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -e ~/.bash_profile ]
 then
-    echo "export PATH=$PATH:$PWD" >> ~/.bash_profile
+    echo export PATH=$PWD:\$PATH >> ~/.bash_profile
 else
-    echo "export PATH=$PATH:$PWD" >> ~/.bashrc
+    echo export PATH=$PWD:\$PATH >> ~/.bashrc
 fi
