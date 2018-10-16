@@ -58,11 +58,11 @@ show_list(){
         local ANSWER=$(cat $TMP_ANS)
         local SESSION=($(cat ${SESSION_FILES[$(($ANSWER-1))]}))
         echo "ssh ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}"
+        echo ${SESSION[@]}
         if [[ ${SESSION[@]} == *"PROXY_FLAG"* ]]; then
-            echo $SESSION
             ssh -v -o ProxyCommand="nc -x ${SESSION[5]} %h %p" -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
         else
-            ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 -o  ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
+            ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
         fi
     done
 }
