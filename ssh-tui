@@ -58,7 +58,12 @@ show_list(){
         local ANSWER=$(cat $TMP_ANS)
         local SESSION=($(cat ${SESSION_FILES[$(($ANSWER-1))]}))
         echo "ssh ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}"
-        ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
+        if [[ ${SESSION[@]} == *"PROXY_FLAG"* ]]; then
+            echo $SESSION
+            ssh -v -o ProxyCommand="nc -x ${SESSION[5]} %h %p" -o ConnectTimeout=10 -o ConnectionAttempts=1 ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
+        else
+            ssh -v -o ConnectTimeout=10 -o ConnectionAttempts=1 -o  ${SESSION[1]}@${SESSION[2]} -p${SESSION[3]}
+        fi
     done
 }
 
@@ -75,6 +80,7 @@ add_list(){
     CMD=$(touch $CONF_DIR/$PROFILE_NAME.session)
     echo $PROFILE_NAME > $CONF_DIR/$PROFILE_NAME.session
 
+    # username
     dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input username" 14 60 "root" \
@@ -87,6 +93,7 @@ add_list(){
     local USERNAME=$(cat $TMP_ANS)
     echo $USERNAME >> $CONF_DIR/$PROFILE_NAME.session
 
+    # host
     dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input hostname or IP" 14 60 \
@@ -99,6 +106,7 @@ add_list(){
     local HOSTNAME=$(cat $TMP_ANS)
     echo $HOSTNAME >> $CONF_DIR/$PROFILE_NAME.session
 
+    # port
     dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
         --inputbox "Input ssh port" 14 60 "22" \
@@ -111,6 +119,28 @@ add_list(){
     local PORT=$(cat $TMP_ANS)
     echo $PORT >> $CONF_DIR/$PROFILE_NAME.session
     sync
+
+    # proxy
+    dialog --clear --backtitle "$BACKTITLE" \
+        --ok-label "Yes" --cancel-label "No" --title "PROFILE INFOMATION" \
+        --yesno "Use proxy?" 14 60 \
+        2>&1 >/dev/tty
+    if [[ $? == 0 ]]
+    then
+        dialog --clear --backtitle "$BACKTITLE" \
+            --ok-label "OK" --cancel-label "Back" --title "PROFILE INFOMATION" \
+            --inputbox "Input proxy" 14 60 "127.0.0.1:1086" \
+            2>$TMP_ANS
+        if [ $? != 0 ]
+        then
+            local PROXY=$(cat $TMP_ANS)
+            echo "PROXY_FLAG" >> $CONF_DIR/$PROFILE_NAME.session
+            echo $PROXY >> $CONF_DIR/$PROFILE_NAME.session
+        fi
+        sync
+    fi
+
+    # ssh-copy-id
     dialog --clear --backtitle "$BACKTITLE" \
         --ok-label "Yes" --cancel-label "No" --title "PROFILE INFOMATION" \
         --yesno "Try copy id to the host?" 14 60 \
