@@ -147,6 +147,7 @@ add_list(){
         2>&1 >/dev/tty
     if [[ $? == 0 ]]
     then
+        echo $USERNAME@$HOSTNAME
         ssh-copy-id $USERNAME@$HOSTNAME -p $PORT
     fi
 }
